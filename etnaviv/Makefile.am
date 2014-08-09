@@ -30,7 +30,8 @@ etnaviv_gpu_la_SOURCES = \
 	etnaviv_accel.c \
 	etnaviv_emit.c \
 	etnaviv_op.c \
-	etnaviv_utils.c
+	etnaviv_utils.c \
+	etnaviv_xv.c
 
 if HAVE_DRI2
 etnaviv_gpu_la_SOURCES += etnaviv_dri2.c

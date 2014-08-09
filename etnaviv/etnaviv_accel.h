@@ -109,6 +109,10 @@ struct etnaviv {
 	AddTrianglesProcPtr AddTriangles;
 	AddTrapsProcPtr AddTraps;
 	UnrealizeGlyphProcPtr UnrealizeGlyph;
+
+	struct etnaviv_xv_priv *xv;
+	unsigned xv_ports;
+	CloseScreenProcPtr xv_CloseScreen;
 };
 
 struct etnaviv_pixmap {
