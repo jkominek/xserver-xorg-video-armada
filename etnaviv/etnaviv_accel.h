@@ -44,6 +44,11 @@ struct etnaviv_dri2_info;
 
 #define dbg(fmt...) fprintf(stderr, fmt)
 
+/* Private CreatePixmap usage hints. */
+enum {
+	CREATE_PIXMAP_USAGE_TILE = 0x80000000,
+};
+
 struct etnaviv {
 	struct viv_conn *conn;
 	struct etna_ctx *ctx;
