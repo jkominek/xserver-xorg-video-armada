@@ -67,8 +67,11 @@ struct etnaviv_de_op {
 	uint32_t fg_colour;
 };
 
+void etnaviv_de_start(struct etnaviv *etnaviv, const struct etnaviv_de_op *op);
+void etnaviv_de_end(struct etnaviv *etnaviv);
 void etnaviv_de_op(struct etnaviv *etnaviv, const struct etnaviv_de_op *op,
 	const BoxRec *pBox, size_t nBox);
+void etnaviv_emit(struct etnaviv *etnaviv);
 void etnaviv_flush(struct etnaviv *etnaviv);
 
 #endif

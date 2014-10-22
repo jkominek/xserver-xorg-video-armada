@@ -28,6 +28,7 @@ etnaviv_gpu_ladir = @moduledir@/drivers
 etnaviv_gpu_la_SOURCES = \
 	etnaviv.c \
 	etnaviv_accel.c \
+	etnaviv_emit.c \
 	etnaviv_op.c \
 	etnaviv_utils.c
 

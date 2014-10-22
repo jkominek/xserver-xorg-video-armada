@@ -120,11 +120,6 @@ static Bool gal_prepare_gpu(struct etnaviv *etnaviv, struct etnaviv_pixmap *vPix
 	return TRUE;
 }
 
-static void etnaviv_blit_complete(struct etnaviv *etnaviv)
-{
-	etnaviv_flush(etnaviv);
-}
-
 static void etnaviv_blit_start(struct etnaviv *etnaviv,
 	const struct etnaviv_de_op *op)
 {
@@ -132,6 +127,8 @@ static void etnaviv_blit_start(struct etnaviv *etnaviv,
 		etnaviv_batch_add(etnaviv, op->src.pixmap);
 
 	etnaviv_batch_add(etnaviv, op->dst.pixmap);
+
+	etnaviv_de_start(etnaviv, op);
 }
 
 static void etnaviv_blit(struct etnaviv *etnaviv,
@@ -187,7 +184,7 @@ static void etnaviv_blit_srcdst(struct etnaviv *etnaviv,
 
 	etnaviv_blit_start(etnaviv, op);
 	etnaviv_blit(etnaviv, op, &box, 1);
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 }
 
 static Bool etnaviv_init_dst_drawable(struct etnaviv *etnaviv,
@@ -512,7 +509,7 @@ Bool etnaviv_accel_FillSpans(DrawablePtr pDrawable, GCPtr pGC, int n,
 
 	etnaviv_blit_start(etnaviv, &op);
 	etnaviv_blit(etnaviv, &op, boxes, b - boxes);
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 
 	free(boxes);
 
@@ -598,7 +595,7 @@ void etnaviv_accel_CopyNtoN(DrawablePtr pSrc, DrawablePtr pDst,
 
 	etnaviv_blit_start(etnaviv, &op);
 	etnaviv_blit_clipped(etnaviv, &op, pBox, nBox);
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 
 	return;
 
@@ -662,7 +659,7 @@ Bool etnaviv_accel_PolyPoint(DrawablePtr pDrawable, GCPtr pGC, int mode,
 	etnaviv_blit_start(etnaviv, &op);
 	etnaviv_blit(etnaviv, &op, RegionRects(&region),
 		     RegionNumRects(&region));
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 
 	RegionUninit(&region);
 
@@ -719,7 +716,7 @@ Bool etnaviv_accel_PolyFillRectSolid(DrawablePtr pDrawable, GCPtr pGC, int n,
 	}
 	if (nb)
 		etnaviv_blit(etnaviv, &op, boxes, nb);
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 
 	return TRUE;
 }
@@ -896,7 +893,7 @@ static Bool etnaviv_fill_single(struct etnaviv *etnaviv,
 
 	etnaviv_blit_start(etnaviv, &op);
 	etnaviv_blit(etnaviv, &op, clip, 1);
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 
 	return TRUE;
 }
@@ -924,7 +921,7 @@ static Bool etnaviv_blend(struct etnaviv *etnaviv, const BoxRec *clip,
 
 	etnaviv_blit_start(etnaviv, &op);
 	etnaviv_blit(etnaviv, &op, pBox, nBox);
-	etnaviv_blit_complete(etnaviv);
+	etnaviv_de_end(etnaviv);
 
 	return TRUE;
 }
@@ -1559,6 +1556,13 @@ Bool etnaviv_accel_init(struct etnaviv *etnaviv)
 	}
 
 	etna_set_pipe(etnaviv->ctx, ETNA_PIPE_2D);
+
+	/*
+	 * The high watermark is the index in our batch buffer at which
+	 * we dump the queued operation over to the command buffers.
+	 * We need room for a flush (two words.)
+	 */
+	etnaviv->batch_de_high_watermark = MAX_BATCH_SIZE - 2;
 
 	return TRUE;
 }
