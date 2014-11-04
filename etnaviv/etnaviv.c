@@ -969,6 +969,7 @@ static Bool etnaviv_ScreenInit(ScreenPtr pScreen, struct drm_armada_bufmgr *mgr)
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "direct rendering: disabled\n");
 	} else {
+		const char *name;
 		char *drm_dev;
 		int dri_fd = -1;
 
@@ -982,16 +983,18 @@ static Bool etnaviv_ScreenInit(ScreenPtr pScreen, struct drm_armada_bufmgr *mgr)
 
 			/* etnadrm fd, etnadrm buffer management */
 			dri_fd = etnaviv->conn->fd;
+			name = "etnadrm";
 		} else if (mgr) {
 			/* armada fd, armada buffer management */
 			dri_fd = GET_DRM_INFO(pScrn)->fd;
 			etnaviv->dri2_armada = TRUE;
+			name = "etnaviv";
 		}
 
 		if (dri_fd == -1) {
 			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 				   "direct rendering: unusuable devices\n");
-		} else if (!etnaviv_dri2_ScreenInit(pScreen, dri_fd)) {
+		} else if (!etnaviv_dri2_ScreenInit(pScreen, dri_fd, name)) {
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 				   "direct rendering: failed\n");
 		} else {
